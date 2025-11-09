@@ -1,0 +1,159 @@
+name: Discord Notification - Pull Request
+
+on:
+  pull_request:
+    types: [opened, reopened, closed]
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    # Only run for PR comments (not issue comments on issues)
+    if: github.event_name != 'issue_comment' || github.event.issue.pull_request
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          REVIEW_STATE: ${{ github.event.review.state }}
+          REVIEW_USER: ${{ github.event.review.user.login }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_USER: ${{ github.event.comment.user.login }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          REPO_URL: ${{ github.event.repository.html_url }}
+        run: |
+          # Check if Discord webhook URL is configured
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "Warning: DISCORD_WEBHOOK_URL secret is not configured."
+            echo "Please add the Discord webhook URL as a repository secret."
+            echo "See .github/DISCORD_SETUP.md for setup instructions."
+            exit 0
+          fi
+
+          # Determine event type and set appropriate variables
+          if [ "$EVENT_NAME" == "pull_request" ]; then
+            AUTHOR="$PR_USER"
+            AUTHOR_URL="https://github.com/${PR_USER}"
+            FINAL_PR_NUMBER="$PR_NUMBER"
+            FINAL_PR_URL="$PR_URL"
+
+            if [ "$EVENT_ACTION" == "opened" ]; then
+              TITLE="✨ Pull Request Opened"
+              COLOR=3066993
+              DESCRIPTION="$PR_TITLE"
+            elif [ "$EVENT_ACTION" == "reopened" ]; then
+              TITLE="🔄 Pull Request Reopened"
+              COLOR=3447003
+              DESCRIPTION="$PR_TITLE"
+            elif [ "$EVENT_ACTION" == "closed" ]; then
+              if [ "$PR_MERGED" == "true" ]; then
+                TITLE="✅ Pull Request Merged"
+                COLOR=5763719
+              else
+                TITLE="❌ Pull Request Closed"
+                COLOR=15158332
+              fi
+              DESCRIPTION="$PR_TITLE"
+            fi
+
+          elif [ "$EVENT_NAME" == "pull_request_review" ]; then
+            AUTHOR="$REVIEW_USER"
+            AUTHOR_URL="https://github.com/${REVIEW_USER}"
+            FINAL_PR_NUMBER="$PR_NUMBER"
+            FINAL_PR_URL="$PR_URL"
+
+            if [ "$REVIEW_STATE" == "approved" ]; then
+              TITLE="✅ Pull Request Approved"
+              COLOR=3066993
+            elif [ "$REVIEW_STATE" == "changes_requested" ]; then
+              TITLE="🔧 Changes Requested"
+              COLOR=15105570
+            else
+              TITLE="💬 Pull Request Reviewed"
+              COLOR=3447003
+            fi
+            DESCRIPTION="$PR_TITLE"
+
+          elif [ "$EVENT_NAME" == "pull_request_review_comment" ]; then
+            AUTHOR="$COMMENT_USER"
+            AUTHOR_URL="https://github.com/${COMMENT_USER}"
+            FINAL_PR_NUMBER="$PR_NUMBER"
+            FINAL_PR_URL="$COMMENT_URL"
+            TITLE="💬 Review Comment Added"
+            COLOR=9807270
+            # Safely truncate comment body
+            DESCRIPTION=$(echo "$COMMENT_BODY" | head -c 200)
+            if [ ${#COMMENT_BODY} -gt 200 ]; then
+              DESCRIPTION="${DESCRIPTION}..."
+            fi
+
+          elif [ "$EVENT_NAME" == "issue_comment" ]; then
+            AUTHOR="$COMMENT_USER"
+            AUTHOR_URL="https://github.com/${COMMENT_USER}"
+            FINAL_PR_NUMBER="$ISSUE_NUMBER"
+            FINAL_PR_URL="$COMMENT_URL"
+            TITLE="💬 Comment on Pull Request"
+            COLOR=9807270
+            # Safely truncate comment body
+            DESCRIPTION=$(echo "$COMMENT_BODY" | head -c 200)
+            if [ ${#COMMENT_BODY} -gt 200 ]; then
+              DESCRIPTION="${DESCRIPTION}..."
+            fi
+          fi
+
+          # Create JSON payload for Discord using jq for safe JSON construction
+          jq -n \
+            --arg title "$TITLE" \
+            --arg description "$DESCRIPTION" \
+            --argjson color "$COLOR" \
+            --arg repo "${GITHUB_REPOSITORY}" \
+            --arg repo_url "$REPO_URL" \
+            --arg pr_number "$FINAL_PR_NUMBER" \
+            --arg pr_url "$FINAL_PR_URL" \
+            --arg author "$AUTHOR" \
+            --arg author_url "$AUTHOR_URL" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
+            '{
+              "embeds": [{
+                "title": $title,
+                "description": $description,
+                "color": $color,
+                "fields": [
+                  {
+                    "name": "Repository",
+                    "value": "[\($repo)](\($repo_url))",
+                    "inline": true
+                  },
+                  {
+                    "name": "Pull Request",
+                    "value": "[#\($pr_number)](\($pr_url))",
+                    "inline": true
+                  },
+                  {
+                    "name": "Author",
+                    "value": "[\($author)](\($author_url))",
+                    "inline": true
+                  }
+                ],
+                "timestamp": $timestamp
+              }]
+            }' > payload.json
+
+          curl -H "Content-Type: application/json" \
+            -d @payload.json "${DISCORD_WEBHOOK}"
