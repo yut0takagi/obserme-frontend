@@ -1,0 +1,18 @@
+# 開発用Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# pnpmを有効化
+RUN corepack enable pnpm
+
+# package.jsonをコピーして依存関係をインストール
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install
+
+# ソースコードをコピー
+COPY . .
+
+EXPOSE 3000
+
+CMD ["pnpm", "dev"]
