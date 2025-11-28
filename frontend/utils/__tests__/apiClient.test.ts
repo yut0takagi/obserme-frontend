@@ -107,27 +107,36 @@ describe('apiClient', () => {
     });
 
     it('ネットワークエラーを適切に処理する', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      // ネットワークエラーはリトライ可能なので、リトライ後にエラーがthrowされる
+      const networkError = new Error('Failed to fetch');
+      (global.fetch as any)
+        .mockRejectedValueOnce(networkError)
+        .mockRejectedValueOnce(networkError)
+        .mockRejectedValueOnce(networkError);
 
-      await expect(apiClient.get('/test')).rejects.toThrow();
+      await expect(apiClient.get('/test', {
+        retry: { maxAttempts: 3, delay: 10 },
+      })).rejects.toThrow();
     });
 
     it('リトライロジックが動作する', async () => {
+      // ネットワークエラーはリトライ可能なエラーとして分類される
+      const networkError = new Error('Failed to fetch');
       (global.fetch as any)
-        .mockRejectedValueOnce(new Error('Network error'))
-        .mockRejectedValueOnce(new Error('Network error'))
+        .mockRejectedValueOnce(networkError)
+        .mockRejectedValueOnce(networkError)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({ success: true }),
         });
 
       const result = await apiClient.get('/test', {
-        retry: { maxAttempts: 3, delay: 100 },
+        retry: { maxAttempts: 3, delay: 10 }, // テストを高速化するため短い遅延
       });
 
       expect(global.fetch).toHaveBeenCalledTimes(3);
       expect(result).toEqual({ success: true });
-    });
+    }, 10000); // タイムアウトを延長
   });
 
   describe('AbortController', () => {

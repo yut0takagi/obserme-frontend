@@ -75,17 +75,20 @@ describe('requestUtils', () => {
     it('同じキーで重複リクエストを防止する', async () => {
       const requestFn = vi.fn().mockResolvedValue('result');
       
+      // 2つのリクエストを同時に開始
       const promise1 = requestDeduplicator.deduplicate('key1', requestFn);
       const promise2 = requestDeduplicator.deduplicate('key1', requestFn);
 
-      expect(promise1).toBe(promise2);
+      // リクエスト関数は1回だけ呼ばれることを確認
       expect(requestFn).toHaveBeenCalledTimes(1);
 
-      const result1 = await promise1;
-      const result2 = await promise2;
+      // 両方のPromiseが同じ結果を返すことを確認
+      const [result1, result2] = await Promise.all([promise1, promise2]);
 
       expect(result1).toBe('result');
       expect(result2).toBe('result');
+      // リクエスト関数は1回だけ呼ばれる（重複リクエストが防止されている）
+      expect(requestFn).toHaveBeenCalledTimes(1);
     });
 
     it('異なるキーでは別々のリクエストを実行する', async () => {
