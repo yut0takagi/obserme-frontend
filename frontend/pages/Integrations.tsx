@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Button, Badge } from '../components/UI';
-import { Mail, Calendar, Video, MessageSquare, Check } from 'lucide-react';
+import { Card, Button, Badge } from '../components/ui';
+import { PageHeader } from '../components/common';
+import { Mail, Calendar, Video, MessageSquare, Check, Settings } from 'lucide-react';
 
 interface Integration {
   id: string;
@@ -27,11 +28,10 @@ const Integrations = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">拡張機能・連携</h2>
-        <p className="text-gray-500 dark:text-gray-400">外部ツールと連携して、ワークフローを自動化しましょう。</p>
-      </div>
+    <div className="space-y-6 min-w-0">
+      <PageHeader
+        description="外部ツールと連携して、ワークフローを自動化しましょう。"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {integrations.map((item) => (

@@ -47,6 +47,49 @@ docker build --target development -t obserme-frontend:dev .
 docker build --target production --build-arg GEMINI_API_KEY=your_api_key -t obserme-frontend:prod .
 ```
 
+## トラブルシューティング
+
+### パーミッションエラーが発生する場合
+
+以下のコマンドでコンテナを再起動して、Viteのキャッシュをクリアしてください：
+
+```bash
+# コンテナを停止
+docker-compose down
+
+# キャッシュをクリアして再ビルド
+docker-compose build --no-cache frontend-dev
+
+# コンテナを起動
+docker-compose up frontend-dev
+```
+
+### Viteが古いファイルを参照している場合
+
+コンテナ内でViteのキャッシュをクリア：
+
+```bash
+# コンテナに入る
+docker-compose exec frontend-dev sh
+
+# キャッシュを削除
+rm -rf /app/.vite
+
+# コンテナから出る
+exit
+
+# コンテナを再起動
+docker-compose restart frontend-dev
+```
+
+### モジュール解決エラーが発生する場合
+
+`EACCES: permission denied` エラーが発生した場合：
+
+1. ホスト側のファイルパーミッションを確認
+2. Dockerコンテナを再起動
+3. 上記のキャッシュクリア手順を実行
+
 ## その他のコマンド
 
 ### コンテナの停止
@@ -63,4 +106,3 @@ docker-compose logs -f frontend-dev
 ```bash
 docker-compose exec frontend-dev sh
 ```
-

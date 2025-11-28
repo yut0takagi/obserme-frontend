@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Card, Button, Badge } from '../components/UI';
+import { Card, Button, Badge } from '../components/ui';
+import { PageHeader, SectionHeader } from '../components/common';
 import { useCourses } from '../context/CourseContext';
 import { Link } from 'react-router-dom';
-import { Plus, BookOpen, Clock, MapPin } from 'lucide-react';
+import { Plus, BookOpen, Clock, MapPin, GraduationCap } from 'lucide-react';
 import { Course } from '../types';
 
 const Courses = () => {
@@ -18,23 +19,26 @@ const Courses = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">履修・講義管理</h2>
-           <p className="text-gray-500 dark:text-gray-400">時間割と授業資料を一元管理します。</p>
-        </div>
-        <Button className="flex items-center">
-          <Plus className="w-4 h-4 mr-2" /> 講義を追加
-        </Button>
-      </div>
+    <div className="space-y-8 min-w-0">
+      <PageHeader
+        description="時間割と授業資料を一元管理します。"
+        actions={
+          <Button className="flex items-center">
+            <Plus className="w-4 h-4 mr-2 flex-shrink-0" /> <span className="truncate">講義を追加</span>
+          </Button>
+        }
+      />
 
       {/* Timetable Section */}
       <Card className="overflow-hidden p-0 border border-gray-200 dark:border-gray-700">
         <div className="bg-gray-50 dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
-            <Clock className="w-5 h-5 mr-2" /> 2023年 秋学期 時間割
-          </h3>
+          <SectionHeader
+            title={
+              <div className="flex items-center">
+                <Clock className="w-5 h-5 mr-2 flex-shrink-0" /> <span>2023年 秋学期 時間割</span>
+              </div>
+            }
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -88,7 +92,7 @@ const Courses = () => {
 
       {/* Course List Section (For Mobile or List View) */}
       <div className="space-y-4">
-        <h3 className="font-bold text-gray-900 dark:text-white text-lg">講義一覧</h3>
+        <SectionHeader title="講義一覧" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
            {courses.map(course => (
              <Link key={course.id} to={`/courses/${course.id}`}>

@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Card, Button, Badge } from '../components/UI';
+import { Card, Button, Badge } from '../components/ui';
+import { PageHeader } from '../components/common';
 import { AddTaskModal } from '../components/AddTaskModal';
 import { useTasks } from '../context/TaskContext';
-import { Plus, Filter } from 'lucide-react';
+import { Plus, Filter, CheckSquare } from 'lucide-react';
 import { Task } from '../types';
 
 const Tasks = () => {
@@ -37,17 +38,19 @@ const Tasks = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex space-x-3">
-          <Button variant="secondary" size="sm" className="flex items-center">
-            <Filter className="w-4 h-4 mr-2" /> フィルター
-          </Button>
-        </div>
-        <Button className="flex items-center" onClick={() => setIsModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" /> 新規タスク
-        </Button>
-      </div>
+    <div className="space-y-6 min-w-0">
+      <PageHeader
+        actions={
+          <>
+            <Button variant="secondary" size="sm" className="flex items-center">
+              <Filter className="w-4 h-4 mr-2 flex-shrink-0" /> <span className="truncate">フィルター</span>
+            </Button>
+            <Button className="flex items-center" onClick={() => setIsModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2 flex-shrink-0" /> <span className="truncate">新規タスク</span>
+            </Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
         {statuses.map(status => (

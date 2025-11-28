@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Input, Card } from '../components/UI';
+import { Button, Input, Card } from '../components/ui';
 
 const Signup = () => {
   const navigate = useNavigate();

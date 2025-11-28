@@ -136,16 +136,16 @@ export const Layout = () => {
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
-        <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 z-10 transition-colors duration-200 shrink-0">
-          <h1 className="text-xl font-semibold text-gray-800 dark:text-white capitalize">{getPageTitle(location.pathname)}</h1>
+        <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 sm:px-6 z-10 transition-colors duration-200 shrink-0 min-w-0">
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white capitalize truncate min-w-0 flex-1 mr-4">{getPageTitle(location.pathname)}</h1>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
             <div className="relative hidden md:block mr-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input 
                 type="text" 
                 placeholder="検索..." 
-                className="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-56 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                className="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-40 lg:w-56 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
 
@@ -179,10 +179,10 @@ export const Layout = () => {
         </header>
 
         {/* Content Body + Right Sidebar */}
-        <div className="flex-1 flex overflow-hidden relative">
-          <main className={`flex-1 overflow-hidden flex flex-col ${isFullScreenPage ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-900'}`}>
-            <div className={`flex-1 ${isFullScreenPage ? '' : 'p-6 overflow-auto'}`}>
-              <div className={`${isFullScreenPage ? 'h-full w-full' : 'max-w-7xl mx-auto h-full'}`}>
+        <div className="flex-1 flex overflow-hidden relative min-w-0">
+          <main className={`flex-1 overflow-hidden flex flex-col min-w-0 ${isFullScreenPage ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-900'}`}>
+            <div className={`flex-1 min-w-0 ${isFullScreenPage ? '' : 'p-4 sm:p-6 overflow-auto'}`}>
+              <div className={`min-w-0 ${isFullScreenPage ? 'h-full w-full' : 'max-w-7xl mx-auto h-full'}`}>
                 <Outlet />
               </div>
             </div>
@@ -190,9 +190,17 @@ export const Layout = () => {
           
           {/* Chat Sidebar */}
           {isChatOpen && (
-             <div className="w-96 flex-shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 z-30 transition-all duration-300">
+            <>
+              {/* モバイル用のオーバーレイ */}
+              <div 
+                className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
+                onClick={() => setIsChatOpen(false)}
+                aria-hidden="true"
+              />
+              <div className="fixed sm:relative inset-y-0 right-0 w-full sm:w-80 lg:w-96 flex-shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 z-50 sm:z-30 transition-all duration-300 min-w-0 max-w-full shadow-xl sm:shadow-none">
                 <ChatSidebar onClose={() => setIsChatOpen(false)} />
-             </div>
+              </div>
+            </>
           )}
         </div>
       </div>

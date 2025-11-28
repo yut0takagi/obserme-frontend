@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Select, Button } from './UI';
+import { Modal, Input, Select, Button } from './ui';
 import { useTasks } from '../context/TaskContext';
 import { useCourses } from '../context/CourseContext';
 import { Task } from '../types';

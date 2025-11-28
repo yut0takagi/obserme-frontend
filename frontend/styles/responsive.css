@@ -1,0 +1,33 @@
+/* レスポンシブデザインのユーティリティクラス */
+
+/* テキストの折り返しを防ぐ */
+.text-nowrap {
+  white-space: nowrap;
+}
+
+/* テキストのオーバーフロー処理 */
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 長い単語の折り返し */
+.break-words {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 最小幅を0に設定（flexboxで必要） */
+.min-w-0 {
+  min-width: 0;
+}
+
+/* レスポンシブなフォントサイズ */
+@media (max-width: 640px) {
+  .text-responsive {
+    font-size: 0.875rem;
+  }
+}
+

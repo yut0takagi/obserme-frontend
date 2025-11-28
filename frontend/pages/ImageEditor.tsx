@@ -1,14 +1,26 @@
-import React, { useState, useRef } from 'react';
-import { Card, Button, Input } from '../components/UI';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Card, Button, Input } from '../components/ui';
 import { editImage } from '../services/gemini';
 import { Upload, Wand2, Loader2, Image as ImageIcon } from 'lucide-react';
+import { abortControllerManager } from '../utils/requestUtils';
 
 const ImageEditor = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // クリーンアップ: コンポーネントのアンマウント時にリクエストをキャンセル
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -22,19 +34,44 @@ const ImageEditor = () => {
     }
   };
 
-  const handleGenerate = async () => {
-    if (!selectedImage || !prompt) return;
+  const handleGenerate = useCallback(async () => {
+    if (!selectedImage || !prompt || loading) return;
+
+    // 前のリクエストをキャンセル
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // 新しいAbortControllerを作成
+    const controller = abortControllerManager.getController('image-edit');
+    abortControllerRef.current = controller;
 
     setLoading(true);
+    setError(null);
+
     try {
-      const result = await editImage(selectedImage, prompt);
+      const result = await editImage(selectedImage, prompt, controller.signal);
+      
+      // リクエストがキャンセルされた場合
+      if (controller.signal.aborted) {
+        return;
+      }
+      
       setGeneratedImage(result);
-    } catch (error) {
-      alert('画像の生成に失敗しました。もう一度お試しください。');
+    } catch (error: any) {
+      // AbortErrorの場合はエラーメッセージを表示しない
+      if (error?.name === 'AbortError') {
+        setLoading(false);
+        return;
+      }
+
+      const errorMessage = error?.message || '画像の生成に失敗しました。もう一度お試しください。';
+      setError(errorMessage);
+      console.error('Image generation error:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedImage, prompt, loading]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -81,7 +118,16 @@ const ImageEditor = () => {
                  <Input 
                     placeholder="例: 'レトロなフィルターを追加して', '雪を降らせて'" 
                     value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                      setError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && selectedImage && prompt && !loading) {
+                        e.preventDefault();
+                        handleGenerate();
+                      }
+                    }}
                  />
                </div>
                <Button 
@@ -90,9 +136,14 @@ const ImageEditor = () => {
                  className="min-w-[120px]"
                >
                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Wand2 className="w-4 h-4 mr-2" />}
-                 生成
+                 {loading ? '生成中...' : '生成'}
                </Button>
              </div>
+             {error && (
+               <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                 {error}
+               </div>
+             )}
           </div>
         </div>
 

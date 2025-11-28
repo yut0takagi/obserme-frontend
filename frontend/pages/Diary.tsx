@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Card, Button, Modal, Input, Badge } from '../components/UI';
+import { Card, Button, Modal, Input, Badge } from '../components/ui';
+import { PageHeader } from '../components/common';
 import { useDiary } from '../context/DiaryContext';
-import { Plus, Trash2, Smile, Meh, Frown, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Smile, Meh, Frown, Sparkles, BookOpen } from 'lucide-react';
 
 const Diary = () => {
   const { entries, addEntry, deleteEntry } = useDiary();
@@ -40,16 +41,15 @@ const Diary = () => {
   const sortedEntries = [...entries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">日記・振り返り</h2>
-          <p className="text-gray-500 dark:text-gray-400">日々の活動やモチベーションを記録して、自己理解を深めましょう。</p>
-        </div>
-        <Button onClick={() => setIsModalOpen(true)} className="flex items-center">
-          <Plus className="w-4 h-4 mr-2" /> 新規作成
-        </Button>
-      </div>
+    <div className="space-y-6 min-w-0">
+      <PageHeader
+        description="日々の活動やモチベーションを記録して、自己理解を深めましょう。"
+        actions={
+          <Button onClick={() => setIsModalOpen(true)} className="flex items-center">
+            <Plus className="w-4 h-4 mr-2 flex-shrink-0" /> <span className="truncate">新規作成</span>
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedEntries.map((entry) => (

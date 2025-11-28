@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCourses } from '../context/CourseContext';
 import { useTasks } from '../context/TaskContext';
-import { Card, Button, Badge } from '../components/UI';
+import { Card, Button, Badge } from '../components/ui';
+import { PageHeader, SectionHeader } from '../components/common';
 import { AddTaskModal } from '../components/AddTaskModal';
 import { ArrowLeft, User, MapPin, Clock, FileText, Upload, BrainCircuit, CheckCircle2, Circle, Plus, File } from 'lucide-react';
 
@@ -37,20 +38,22 @@ const CourseDetail = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4 mb-2">
-        <Link to="/courses">
-          <Button variant="secondary" size="sm" className="p-2">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        </Link>
-        <div>
-           <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-             {course.name}
-             <Badge color="gray">{course.credits} 単位</Badge>
-           </h2>
-        </div>
-      </div>
+    <div className="space-y-6 min-w-0">
+      <PageHeader
+        description={
+          <div className="flex items-center gap-3 min-w-0 flex-wrap">
+            <span className="text-lg font-semibold text-gray-900 dark:text-white truncate">{course.name}</span>
+            <Badge color="gray">{course.credits} 単位</Badge>
+          </div>
+        }
+        actions={
+          <Link to="/courses">
+            <Button variant="secondary" size="sm" className="p-2">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Info & Assignments */}
@@ -88,15 +91,19 @@ const CourseDetail = () => {
 
             {/* Assignments (Tasks) */}
             <Card>
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
-                        <FileText className="w-5 h-5 mr-2 text-indigo-500" />
-                        課題・タスク
-                    </h3>
+                <SectionHeader
+                  title={
+                    <div className="flex items-center">
+                      <FileText className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                      <span>課題・タスク</span>
+                    </div>
+                  }
+                  action={
                     <Button size="sm" variant="secondary" onClick={() => setIsTaskModalOpen(true)}>
-                        <Plus className="w-4 h-4 mr-1" /> 課題を追加
+                      <Plus className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">課題を追加</span>
                     </Button>
-                </div>
+                  }
+                />
                 
                 <div className="space-y-3">
                     {courseTasks.length > 0 ? (
@@ -129,7 +136,7 @@ const CourseDetail = () => {
         <div className="space-y-6">
             <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl p-6 text-white shadow-lg">
                 <div className="flex items-center gap-2 mb-2">
-                    <BrainCircuit className="w-6 h-6 text-indigo-200" />
+                    <BrainCircuit className="w-6 h-6 text-indigo-200 flex-shrink-0" />
                     <h3 className="text-lg font-bold">AI学習資料</h3>
                 </div>
                 <p className="text-sm text-indigo-100 mb-4">
@@ -141,7 +148,7 @@ const CourseDetail = () => {
             </div>
 
             <Card>
-                <h3 className="text-md font-bold text-gray-900 dark:text-white mb-4">アップロード済み資料</h3>
+                <SectionHeader title="アップロード済み資料" />
                 <div className="space-y-3">
                     {courseDocuments.length > 0 ? (
                         courseDocuments.map(doc => (

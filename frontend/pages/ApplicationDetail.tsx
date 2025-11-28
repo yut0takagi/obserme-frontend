@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { mockApplications } from '../services/mockData';
 import { useTasks } from '../context/TaskContext';
 import { AddTaskModal } from '../components/AddTaskModal';
-import { Card, Button, Badge, Modal, Select } from '../components/UI';
+import { Card, Button, Badge, Modal, Select } from '../components/ui';
+import { PageHeader, SectionHeader } from '../components/common';
 import { ArrowLeft, Save, CheckCircle2, Circle, Plus, FileText, MessageSquare, Users, Edit3 } from 'lucide-react';
 import { ApplicationMemo } from '../types';
+import { groupTasksByApplicationId } from '../utils/dataOptimization';
 
 const ApplicationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,7 +18,13 @@ const ApplicationDetail = () => {
   const [application, setApplication] = useState(applicationData);
   
   const { tasks } = useTasks();
-  const relatedTasks = tasks.filter(t => t.applicationId === id);
+  
+  // N+1問題の解決: タスクを一度だけグループ化
+  const tasksByAppId = useMemo(() => groupTasksByApplicationId(tasks), [tasks]);
+  const relatedTasks = useMemo(() => {
+    if (!id) return [];
+    return tasksByAppId.get(id) || [];
+  }, [id, tasksByAppId]);
   
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isMemoModalOpen, setIsMemoModalOpen] = useState(false);
@@ -91,31 +99,37 @@ const ApplicationDetail = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4 mb-4">
-        <Link to="/applications">
-          <Button variant="secondary" size="sm" className="p-2">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        </Link>
-        <div>
-           <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-             {application.company}
-             <Badge color={application.status === '内定' ? 'green' : 'blue'}>{application.status}</Badge>
-           </h2>
-           <p className="text-gray-500 dark:text-gray-400">{application.position}</p>
-        </div>
-      </div>
+    <div className="space-y-6 min-w-0">
+      <PageHeader
+        description={
+          <div className="flex items-center gap-3 min-w-0 flex-wrap">
+            <span className="text-lg font-semibold text-gray-900 dark:text-white truncate">{application.company}</span>
+            <Badge color={application.status === '内定' ? 'green' : 'blue'}>{application.status}</Badge>
+            {application.position && (
+              <span className="text-sm text-gray-500 dark:text-gray-400 truncate">{application.position}</span>
+            )}
+          </div>
+        }
+        actions={
+          <Link to="/applications">
+            <Button variant="secondary" size="sm" className="p-2">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content: Memos */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">選考メモ</h3>
-            <Button size="sm" onClick={handleOpenMemoModal} className="flex items-center">
-              <Plus className="w-4 h-4 mr-2" /> メモを追加
-            </Button>
-          </div>
+          <SectionHeader
+            title="選考メモ"
+            action={
+              <Button size="sm" onClick={handleOpenMemoModal} className="flex items-center">
+                <Plus className="w-4 h-4 mr-2 flex-shrink-0" /> <span className="truncate">メモを追加</span>
+              </Button>
+            }
+          />
 
           <div className="space-y-4">
             {application.memos.length > 0 ? (
@@ -151,7 +165,7 @@ const ApplicationDetail = () => {
         {/* Sidebar: Tasks & Info */}
         <div className="space-y-6">
           <Card>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">WBS / タスク</h3>
+            <SectionHeader title="WBS / タスク" />
             <div className="space-y-3">
               {relatedTasks.length > 0 ? relatedTasks.map(task => (
                 <div key={task.id} className="flex items-start gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors cursor-pointer group">
@@ -175,7 +189,7 @@ const ApplicationDetail = () => {
           </Card>
 
           <Card>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">基本情報</h3>
+            <SectionHeader title="基本情報" />
             <div className="space-y-4 text-sm">
               <div>
                 <span className="block text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">更新日</span>

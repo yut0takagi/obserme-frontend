@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { Card, Button, Input, Badge } from '../components/UI';
-import { MapPin, Link as LinkIcon, Mail, Calendar, Edit3, Share2, Users, FileText, CheckCircle2, BookOpen, Save, X, Camera } from 'lucide-react';
+import { Card, Button, Input, Badge } from '../components/ui';
+import { PageHeader } from '../components/common';
+import { MapPin, Link as LinkIcon, Mail, Calendar, Edit3, Share2, Users, FileText, CheckCircle2, BookOpen, Save, X, Camera, User } from 'lucide-react';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'connections' | 'shared'>('overview');

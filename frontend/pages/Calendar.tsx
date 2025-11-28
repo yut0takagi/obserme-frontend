@@ -1,7 +1,8 @@
 import React from 'react';
-import { Card, Button } from '../components/UI';
+import { Card, Button } from '../components/ui';
+import { PageHeader, SectionHeader } from '../components/common';
 import { mockEvents } from '../services/mockData';
-import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Calendar } from 'lucide-react';
 
 const CalendarPage = () => {
   // Mock calendar grid for visualization
@@ -9,16 +10,17 @@ const CalendarPage = () => {
   const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
 
   return (
-    <div className="flex flex-col md:flex-row h-full md:h-[calc(100vh-140px)] gap-6">
-      {/* Calendar Grid */}
-      <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">2023年 11月</h2>
-          <div className="flex space-x-2">
-            <Button variant="secondary" size="sm"><ChevronLeft className="w-4 h-4" /></Button>
-            <Button variant="secondary" size="sm"><ChevronRight className="w-4 h-4" /></Button>
+    <div className="space-y-6 min-w-0">
+      <div className="flex flex-col md:flex-row h-full md:h-[calc(100vh-200px)] gap-6">
+        {/* Calendar Grid */}
+        <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col min-w-0">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">2023年 11月</h2>
+            <div className="flex space-x-2 flex-shrink-0">
+              <Button variant="secondary" size="sm"><ChevronLeft className="w-4 h-4" /></Button>
+              <Button variant="secondary" size="sm"><ChevronRight className="w-4 h-4" /></Button>
+            </div>
           </div>
-        </div>
         <div className="grid grid-cols-7 gap-px bg-gray-200 dark:bg-gray-700 flex-1">
           {weekDays.map(day => (
             <div key={day} className="bg-gray-50 dark:bg-gray-800 p-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">{day}</div>
@@ -40,10 +42,10 @@ const CalendarPage = () => {
         </div>
       </div>
 
-      {/* Side List */}
-      <div className="w-full md:w-80 space-y-4">
-        <Card className="h-full overflow-y-auto">
-          <h3 className="font-bold text-gray-900 dark:text-white mb-4">今後の予定</h3>
+        {/* Side List */}
+        <div className="w-full md:w-80 space-y-4 flex-shrink-0">
+          <Card className="h-full overflow-y-auto">
+            <SectionHeader title="今後の予定" />
           <div className="space-y-4">
             {mockEvents.map(event => (
               <div key={event.id} className="flex gap-3 items-start pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
@@ -67,8 +69,9 @@ const CalendarPage = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </Card>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

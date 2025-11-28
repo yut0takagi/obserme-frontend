@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Badge } from '../components/UI';
+import { Card, Button, Badge } from '../components/ui';
 import { useLiveSession } from '../hooks/useLiveSession';
 import { Mic, MicOff, Activity, AlertCircle } from 'lucide-react';
 

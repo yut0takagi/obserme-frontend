@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { mockApplications } from '../services/mockData';
 import { useTasks } from '../context/TaskContext';
 import { AddTaskModal } from '../components/AddTaskModal';
-import { Card, Badge, Button } from '../components/UI';
+import { Card, Badge, Button } from '../components/ui';
+import { PageHeader } from '../components/common';
 import { ChevronRight, ChevronDown, CheckCircle2, Circle, ListTree, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { groupTasksByApplicationId, calculateTaskProgress } from '../utils/dataOptimization';
 
 const ApplicationWBS = () => {
   const { tasks } = useTasks();
+  
+  // N+1問題の解決: タスクを一度だけグループ化
+  const tasksByAppId = useMemo(() => groupTasksByApplicationId(tasks), [tasks]);
+  
   // 状態管理
   const [expanded, setExpanded] = useState<Record<string, boolean>>(
     mockApplications.reduce((acc, app) => ({ ...acc, [app.id]: true }), {})
@@ -28,29 +34,23 @@ const ApplicationWBS = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-            <ListTree className="w-6 h-6 mr-3 text-indigo-600 dark:text-indigo-400" />
-            全選考 WBS (Work Breakdown Structure)
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400">プロジェクトごとに選考タスクを管理・俯瞰します。</p>
-        </div>
-        <Link to="/tasks">
-          <Button variant="secondary">通常のタスクリストへ</Button>
-        </Link>
-      </div>
+    <div className="space-y-6 min-w-0">
+      <PageHeader
+        actions={
+          <Link to="/tasks">
+            <Button variant="secondary" className="w-full sm:w-auto">通常のタスクリストへ</Button>
+          </Link>
+        }
+      />
 
       <div className="space-y-4">
         {mockApplications.map(app => {
-          const appTasks = tasks.filter(t => t.applicationId === app.id);
+          // N+1問題の解決: 事前にグループ化されたタスクを取得
+          const appTasks = tasksByAppId.get(app.id) || [];
           const isExpanded = expanded[app.id];
           
-          // 進捗率計算
-          const total = appTasks.length;
-          const completed = appTasks.filter(t => t.status === '完了').length;
-          const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+          // 進捗率計算（最適化済み関数を使用）
+          const { progress } = calculateTaskProgress(appTasks);
 
           return (
             <Card key={app.id} className="p-0 overflow-hidden">
@@ -59,15 +59,17 @@ const ApplicationWBS = () => {
                 className="bg-gray-50 dark:bg-gray-800 p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
                 onClick={() => toggleExpand(app.id)}
               >
-                <div className="flex items-center gap-3">
-                  <div className="text-gray-400">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="text-gray-400 flex-shrink-0">
                     {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{app.company}</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{app.position}</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">{app.company}</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{app.position}</p>
                   </div>
-                  <Badge color={app.status === '内定' ? 'green' : 'blue'}>{app.status}</Badge>
+                  <div className="flex-shrink-0">
+                    <Badge color={app.status === '内定' ? 'green' : 'blue'}>{app.status}</Badge>
+                  </div>
                 </div>
                 
                 <div className="flex items-center gap-6">
@@ -92,11 +94,11 @@ const ApplicationWBS = () => {
                   {appTasks.length > 0 ? (
                     appTasks.map(task => (
                       <div key={task.id} className="flex items-center justify-between p-3 pl-12 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className={`cursor-pointer ${task.status === '完了' ? 'text-green-500' : 'text-gray-300 dark:text-gray-600'}`}>
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className={`cursor-pointer flex-shrink-0 ${task.status === '完了' ? 'text-green-500' : 'text-gray-300 dark:text-gray-600'}`}>
                             {task.status === '完了' ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
                           </div>
-                          <span className={`text-sm font-medium ${task.status === '完了' ? 'text-gray-400 line-through' : 'text-gray-700 dark:text-gray-200'}`}>
+                          <span className={`text-sm font-medium truncate ${task.status === '完了' ? 'text-gray-400 line-through' : 'text-gray-700 dark:text-gray-200'}`}>
                             {task.title}
                           </span>
                         </div>

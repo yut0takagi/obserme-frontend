@@ -3,10 +3,12 @@ import React, { useState, useMemo, useEffect, useRef, useLayoutEffect } from 're
 import { mockApplications } from '../services/mockData';
 import { useTasks } from '../context/TaskContext';
 import { AddTaskModal } from '../components/AddTaskModal';
-import { Badge, Button } from '../components/UI';
+import { Badge, Button } from '../components/ui';
+import { PageHeader } from '../components/common';
 import { ChevronRight, ChevronDown, CheckCircle2, Circle, Plus, Briefcase, GripVertical, ZoomIn, ZoomOut, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Application } from '../types';
+import { groupTasksByApplicationId, calculateTaskProgress } from '../utils/dataOptimization';
 
 // Helper to check if two dates are the same day
 const isSameDay = (d1: Date, d2: Date) => {
@@ -17,6 +19,9 @@ const isSameDay = (d1: Date, d2: Date) => {
 
 const Applications = () => {
   const { tasks } = useTasks();
+  
+  // N+1問題の解決: タスクを一度だけグループ化
+  const tasksByAppId = useMemo(() => groupTasksByApplicationId(tasks), [tasks]);
   
   // Local state for Applications to support optimistic updates for Gantt dragging
   const [localApps, setLocalApps] = useState<Application[]>(mockApplications);
@@ -325,15 +330,9 @@ const Applications = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-100px)] overflow-hidden select-none">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 flex-shrink-0 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-            <Briefcase className="w-6 h-6 mr-3 text-indigo-600 dark:text-indigo-400" />
-            選考管理・スケジュール
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400">プロジェクトごとの進捗とスケジュールを俯瞰します。</p>
-        </div>
-        <div className="flex space-x-2 items-center">
+      <PageHeader
+        actions={
+          <div className="flex flex-wrap gap-2 items-center">
            {/* View Mode Slider */}
            <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 mr-2 shadow-sm">
               <ZoomOut className="w-4 h-4 text-gray-400 mr-2" />
@@ -360,10 +359,11 @@ const Applications = () => {
            <Button className="flex items-center" onClick={() => {
               setSelectedAppId(undefined);
            }}>
-             <Plus className="w-4 h-4 mr-2" /> 選考を追加
+             <Plus className="w-4 h-4 mr-2 flex-shrink-0" /> <span className="truncate">選考を追加</span>
            </Button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {/* Main Split View */}
       <div className="flex flex-1 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm relative">
@@ -381,11 +381,10 @@ const Applications = () => {
              className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide"
            >
               {localApps.map(app => {
-                 const appTasks = tasks.filter(t => t.applicationId === app.id);
+                 // N+1問題の解決: 事前にグループ化されたタスクを取得
+                 const appTasks = tasksByAppId.get(app.id) || [];
                  const isExpanded = expanded[app.id];
-                 const total = appTasks.length;
-                 const completed = appTasks.filter(t => t.status === '完了').length;
-                 const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+                 const { progress } = calculateTaskProgress(appTasks);
 
                  return (
                     <div key={app.id}>
@@ -525,7 +524,8 @@ const Applications = () => {
               {/* Rows */}
               <div className="relative z-10 pb-20" style={{ width: `${timelineDates.length * cellWidth}px` }}>
                  {localApps.map(app => {
-                    const appTasks = tasks.filter(t => t.applicationId === app.id);
+                    // N+1問題の解決: 事前にグループ化されたタスクを取得
+                    const appTasks = tasksByAppId.get(app.id) || [];
                     const isExpanded = expanded[app.id];
                     
                     // Use Application startDate/endDate for the bar range

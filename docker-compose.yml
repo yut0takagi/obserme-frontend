@@ -11,6 +11,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/.vite  # Viteのキャッシュをボリュームから除外
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     stdin_open: true
