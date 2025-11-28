@@ -1,0 +1,24 @@
+title: 💬 一般的な質問・ディスカッション
+labels: ['question', 'discussion']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        一般的な質問やディスカッションはこちらでお願いします。
+        
+  - type: textarea
+    id: question
+    attributes:
+      label: 質問・トピック
+      description: 質問やディスカッションしたい内容を記入してください
+      placeholder: 例: この機能の使い方について教えてください
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 追加のコンテキスト
+      description: 必要に応じて、追加の情報やスクリーンショットを添付してください
+      placeholder: 関連する情報があれば記入してください
+

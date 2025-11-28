@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/yut0takagi/obserme-frontend/discussions
+    about: 質問やアイデアの共有はこちらでお願いします
+  - name: 📚 ドキュメント
+    url: https://github.com/yut0takagi/obserme-frontend#readme
+    about: プロジェクトのドキュメントを確認してください
+

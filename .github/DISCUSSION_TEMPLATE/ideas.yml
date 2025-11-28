@@ -1,0 +1,43 @@
+title: 💡 アイデア・提案
+labels: ['enhancement', 'idea']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        新機能のアイデアや改善提案を共有してください。
+        
+  - type: textarea
+    id: idea
+    attributes:
+      label: アイデア・提案
+      description: 提案する機能や改善点を詳しく説明してください
+      placeholder: 例: タスクに優先度を設定できる機能を追加したい
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 解決する問題
+      description: このアイデアが解決する問題や課題を説明してください
+      placeholder: 例: 現在、タスクの優先順位が分かりにくい
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 提案する解決策
+      description: どのように実装するか、具体的な解決策を説明してください
+      placeholder: 例: タスクに「高」「中」「低」の優先度を設定できるようにする
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      description: この機能の優先度を選択してください
+      options:
+        - 高（すぐに必要）
+        - 中（近いうちに必要）
+        - 低（あれば良い）
+    validations:
+      required: true
+
