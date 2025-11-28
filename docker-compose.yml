@@ -1,0 +1,34 @@
+services:
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.vite  # Viteのキャッシュをボリュームから除外
+    env_file:
+      - .env  # オプショナル: 存在しない場合は無視される
+    environment:
+      - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
+      - VITE_API_VERSION_GEMINI=${VITE_API_VERSION_GEMINI:-}
+      - VITE_API_VERSION_BACKEND=${VITE_API_VERSION_BACKEND:-}
+      - VITE_ENABLE_DEBUG_MODE=${VITE_ENABLE_DEBUG_MODE:-false}
+    stdin_open: true
+    tty: true
+
+  frontend-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "80:80"
+    profiles:
+      - production
+

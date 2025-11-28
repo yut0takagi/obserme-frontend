@@ -1,0 +1,71 @@
+/* デザインシステム - 統一されたスタイル定義 */
+
+:root {
+  /* カラーパレット */
+  --color-primary: #4f46e5; /* indigo-600 */
+  --color-primary-hover: #4338ca; /* indigo-700 */
+  --color-primary-light: #e0e7ff; /* indigo-100 */
+  --color-primary-dark: #312e81; /* indigo-900 */
+  
+  /* セマンティックカラー */
+  --color-success: #10b981; /* emerald-500 */
+  --color-warning: #f59e0b; /* amber-500 */
+  --color-error: #ef4444; /* red-500 */
+  --color-info: #3b82f6; /* blue-500 */
+  
+  /* スペーシング */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 1rem; /* 16px */
+  --spacing-lg: 1.5rem; /* 24px */
+  --spacing-xl: 2rem; /* 32px */
+  --spacing-2xl: 3rem; /* 48px */
+  
+  /* タイポグラフィ */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  
+  /* ボーダー半径 */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  
+  /* シャドウ */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  
+  /* トランジション */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 200ms ease-in-out;
+  --transition-slow: 300ms ease-in-out;
+}
+
+/* ユーティリティクラス */
+.page-header {
+  @apply flex flex-col md:flex-row justify-between items-start md:items-center mb-6 flex-shrink-0 gap-4 min-w-0;
+}
+
+.page-title {
+  @apply text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center min-w-0;
+}
+
+.page-description {
+  @apply text-sm sm:text-base text-gray-500 dark:text-gray-400 break-words mt-1;
+}
+
+.section-header {
+  @apply flex justify-between items-center mb-4 sm:mb-6;
+}
+
+.section-title {
+  @apply text-lg font-bold text-gray-800 dark:text-white;
+}
+

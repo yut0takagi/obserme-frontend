@@ -1,0 +1,59 @@
+{
+  "services": {
+    "gemini": {
+      "baseUrl": "https://generativelanguage.googleapis.com",
+      "versions": {
+        "v1beta": {
+          "path": "/v1beta",
+          "models": {
+            "image": "gemini-2.5-flash-image",
+            "chat": "gemini-2.5-flash"
+          },
+          "endpoints": {
+            "generateContent": "/models/{model}:generateContent"
+          }
+        },
+        "v1": {
+          "path": "/v1",
+          "models": {
+            "image": "gemini-2.0-flash-image",
+            "chat": "gemini-2.0-flash"
+          },
+          "endpoints": {
+            "generateContent": "/models/{model}:generateContent"
+          }
+        }
+      },
+      "defaultVersion": "v1beta"
+    },
+    "backend": {
+      "baseUrl": "http://localhost:8000",
+      "versions": {
+        "v1": {
+          "path": "/api/v1",
+          "endpoints": {
+            "tasks": "/tasks",
+            "applications": "/applications",
+            "diary": "/diary",
+            "courses": "/courses",
+            "calendar": "/calendar",
+            "profile": "/profile"
+          }
+        },
+        "v2": {
+          "path": "/api/v2",
+          "endpoints": {
+            "tasks": "/tasks",
+            "applications": "/applications",
+            "diary": "/diary",
+            "courses": "/courses",
+            "calendar": "/calendar",
+            "profile": "/profile"
+          }
+        }
+      },
+      "defaultVersion": "v2"
+    }
+  }
+}
+

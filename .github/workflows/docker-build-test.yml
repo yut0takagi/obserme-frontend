@@ -1,0 +1,91 @@
+name: Docker Build Test
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  docker-build-test:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Docker Compose
+        run: |
+          # Docker Compose v2が利用可能か確認
+          if ! docker compose version &> /dev/null; then
+            echo "Docker Compose v2 not found, installing Docker Compose v1..."
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker-compose --version
+          else
+            echo "Docker Compose v2 is available"
+            docker compose version
+          fi
+
+      - name: Build development image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          target: development
+          tags: obserme-frontend:dev-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: false
+
+      - name: Build production image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          target: production
+          tags: obserme-frontend:prod-test
+          build-args: |
+            GEMINI_API_KEY=dummy-key-for-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: false
+
+      - name: Test Docker Compose
+        run: |
+          # docker-compose.ymlの構文チェック
+          # .envファイルが存在しない場合でもエラーにしない
+          # 環境変数の警告は無視する
+          touch .env  # 空の.envファイルを作成してエラーを回避
+          
+          if docker compose version &> /dev/null; then
+            # 構文チェックを実行（警告は無視）
+            docker compose config > /dev/null 2>&1 || {
+              # エラーがある場合は詳細を表示（警告は除外）
+              docker compose config 2>&1 | grep -v "variable is not set" | grep -v "env file" | grep -v "obsolete" || true
+              # 構文エラーのみをチェック
+              if docker compose config 2>&1 | grep -q "error\|Error\|ERROR"; then
+                echo "Docker Compose syntax error detected"
+                exit 1
+              fi
+            }
+            echo "✅ Docker Compose syntax is valid"
+          elif docker-compose --version &> /dev/null; then
+            docker-compose config > /dev/null 2>&1 || {
+              docker-compose config 2>&1 | grep -v "variable is not set" | grep -v "env file" | grep -v "obsolete" || true
+              if docker-compose config 2>&1 | grep -q "error\|Error\|ERROR"; then
+                echo "Docker Compose syntax error detected"
+                exit 1
+              fi
+            }
+            echo "✅ Docker Compose syntax is valid"
+          else
+            echo "Error: Docker Compose not found"
+            exit 1
+          fi
+

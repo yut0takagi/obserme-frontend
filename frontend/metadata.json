@@ -1,0 +1,8 @@
+{
+  "name": "obserme-frontend",
+  "description": "A comprehensive dashboard for students and young professionals to manage job hunting, tasks, and productivity.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
