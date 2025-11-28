@@ -2,8 +2,8 @@ import React from 'react';
 import { LucideIcon } from 'lucide-react';
 
 interface PageHeaderProps {
-  title?: string;
-  description?: string;
+  title?: string | React.ReactNode;
+  description?: string | React.ReactNode;
   icon?: LucideIcon;
   actions?: React.ReactNode;
   className?: string;
@@ -30,13 +30,21 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               {Icon && (
                 <Icon className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
               )}
-              <span className="truncate">{title}</span>
+              {typeof title === 'string' ? (
+                <span className="truncate">{title}</span>
+              ) : (
+                title
+              )}
             </h1>
           )}
           {description && (
-            <p className={`text-sm sm:text-base text-gray-500 dark:text-gray-400 break-words ${title ? 'mt-1' : ''}`}>
-              {description}
-            </p>
+            <div className={`text-sm sm:text-base text-gray-500 dark:text-gray-400 break-words ${title ? 'mt-1' : ''}`}>
+              {typeof description === 'string' ? (
+                <p>{description}</p>
+              ) : (
+                description
+              )}
+            </div>
           )}
         </div>
       )}

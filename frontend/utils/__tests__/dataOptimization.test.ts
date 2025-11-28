@@ -104,7 +104,7 @@ describe('dataOptimization', () => {
 
     it('カテゴリがないタスクは「その他」に分類する', () => {
       // カテゴリがオプショナルな場合のテスト（型定義上は必須だが、実際のデータでnull/undefinedが来る可能性を考慮）
-      const tasksWithUndefinedCategory = mockTasks.map(task => ({
+      const tasksWithUndefinedCategory: Task[] = mockTasks.map(task => ({
         ...task,
         category: undefined as any, // テストのため型アサーションを使用
       }));
@@ -131,9 +131,9 @@ describe('dataOptimization', () => {
           id: '1',
           title: 'Task 1',
           category: '就活',
+          status: '未着手',
           priority: '中',
           dueDate: '2024-01-01',
-          createdAt: new Date().toISOString(),
         },
       ];
       
