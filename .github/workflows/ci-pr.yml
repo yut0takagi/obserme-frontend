@@ -6,6 +6,11 @@ on:
       - main
       - develop
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   pr-checks:
     name: PR Checks
@@ -41,7 +46,7 @@ jobs:
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY || 'dummy-key-for-build' }}
 
       - name: Comment PR with test results
-        if: always()
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -50,16 +55,27 @@ jobs:
               ? fs.readdirSync('frontend/test-results').join(', ')
               : 'No test results found';
             
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## CI Results ✅
-              
-              - ✅ Type check: Passed
-              - ✅ Tests: Passed
-              - ✅ Build: Passed
-              
-              Test results: ${testResults}`
-            });
+            const jobStatus = '${{ job.status }}';
+            const isSuccess = jobStatus === 'success';
+            const statusIcon = isSuccess ? '✅' : '❌';
+            
+            const body = `## CI Results ${statusIcon}
+            
+            - ${statusIcon} Type check: ${isSuccess ? 'Passed' : 'Failed'}
+            - ${statusIcon} Tests: ${isSuccess ? 'Passed' : 'Failed'}
+            - ${statusIcon} Build: ${isSuccess ? 'Passed' : 'Failed'}
+            
+            Test results: ${testResults}`;
+            
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } catch (error) {
+              console.error('Failed to create comment:', error.message);
+              // コメント作成に失敗してもCIを失敗させない
+            }
 

@@ -19,6 +19,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Install Docker Compose
+        run: |
+          # Docker Compose v2が利用可能か確認
+          if ! docker compose version &> /dev/null; then
+            echo "Docker Compose v2 not found, installing Docker Compose v1..."
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker-compose --version
+          else
+            echo "Docker Compose v2 is available"
+            docker compose version
+          fi
+
       - name: Build development image
         uses: docker/build-push-action@v5
         with:
@@ -46,5 +59,13 @@ jobs:
       - name: Test Docker Compose
         run: |
           # docker-compose.ymlの構文チェック
-          docker-compose config
+          # Docker Compose v2を優先、利用できない場合はv1を使用
+          if docker compose version &> /dev/null; then
+            docker compose config
+          elif docker-compose --version &> /dev/null; then
+            docker-compose config
+          else
+            echo "Error: Docker Compose not found"
+            exit 1
+          fi
 
