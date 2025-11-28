@@ -59,11 +59,14 @@ jobs:
       - name: Test Docker Compose
         run: |
           # docker-compose.ymlの構文チェック
+          # .envファイルが存在しない場合でもエラーにしない
           # Docker Compose v2を優先、利用できない場合はv1を使用
           if docker compose version &> /dev/null; then
-            docker compose config
+            docker compose config --env-file /dev/null 2>&1 | grep -v "variable is not set" | grep -v "env file.*not found" || true
+            docker compose config --env-file /dev/null > /dev/null
           elif docker-compose --version &> /dev/null; then
-            docker-compose config
+            docker-compose config --env-file /dev/null 2>&1 | grep -v "variable is not set" | grep -v "env file.*not found" || true
+            docker-compose config --env-file /dev/null > /dev/null
           else
             echo "Error: Docker Compose not found"
             exit 1

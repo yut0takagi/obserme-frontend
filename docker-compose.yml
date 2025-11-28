@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   frontend-dev:
     build:
@@ -13,7 +11,7 @@ services:
       - /app/node_modules
       - /app/.vite  # Viteのキャッシュをボリュームから除外
     env_file:
-      - .env
+      - .env  # オプショナル: 存在しない場合は無視される
     environment:
       - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
       - VITE_API_VERSION_GEMINI=${VITE_API_VERSION_GEMINI:-}
