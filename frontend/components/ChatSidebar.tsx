@@ -6,6 +6,7 @@ import { ChatMessage } from '../types';
 import { Send, Bot, X, Smile, Paperclip, MoreHorizontal, Sparkles } from 'lucide-react';
 import { Content, Part } from '@google/genai';
 import { useDebounce, abortControllerManager } from '../utils/requestUtils';
+import { handleError, getUserErrorMessage } from '../utils/errorHandler';
 
 interface ChatSidebarProps {
   onClose: () => void;
@@ -30,6 +31,8 @@ export const ChatSidebar = ({ onClose }: ChatSidebarProps) => {
     }
   ]);
 
+  // #TODO: 会話履歴の最大件数を制限（メモリリーク防止）
+  // #TODO: 会話履歴の圧縮機能（古いメッセージを要約）
   const [geminiHistory, setGeminiHistory] = useState<Content[]>([
     { role: 'model', parts: [{ text: 'こんにちは！Obserme AI です。' }] }
   ]);
@@ -94,6 +97,9 @@ export const ChatSidebar = ({ onClose }: ChatSidebarProps) => {
         { role: 'user', parts: [{ text: userText }] }
       ];
 
+      // #TODO: チャット機能のレート制限を追加
+      // #TODO: ストリーミングレスポンスの対応（リアルタイムでテキストを表示）
+      // #TODO: 会話履歴の永続化（ローカルストレージまたはバックエンドAPI）
       const result = await model.generateContent({
         model: chatModelName,
         contents: currentHistory,
@@ -209,11 +215,14 @@ export const ChatSidebar = ({ onClose }: ChatSidebarProps) => {
         return;
       }
 
-      console.error("Chat Error:", error);
+      // エラーを分類してユーザーフレンドリーなメッセージを取得
+      const appError = handleError(error, 'ChatSidebar.handleSendMessage');
+      const userMessage = getUserErrorMessage(error);
+      
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: 'system',
-        content: error?.message || 'エラーが発生しました。もう一度お試しください。',
+        content: userMessage,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         name: 'System'
       }]);

@@ -1,14 +1,18 @@
 
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 import { requestDeduplicator } from '../utils/requestUtils';
+import { apiConfig, env } from '../config/env';
+import { handleError, getUserErrorMessage } from '../utils/errorHandler';
 
-const apiKey = process.env.API_KEY || '';
+const apiKey = env.geminiApiKey;
 if (!apiKey) {
   console.warn('GEMINI_API_KEY is not set. Some features may not work.');
 }
 
 const ai = new GoogleGenAI({ apiKey });
 
+// #TODO: レート制限の設定をapi-config.jsonから読み込むように変更
+// #TODO: チャット機能のレート制限も追加
 // レート制限: 画像編集は1分間に5回まで
 let imageEditRequests: number[] = [];
 const MAX_IMAGE_EDIT_PER_MINUTE = 5;
@@ -65,8 +69,11 @@ export const editImage = async (
             throw new Error('Request aborted');
           }
 
+          // モデル名を設定から取得
+          const modelName = apiConfig.getModel('gemini', 'image');
+          
           const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
+            model: modelName,
             contents: {
               parts: [
                 {
@@ -105,14 +112,16 @@ export const editImage = async (
       
       throw lastError || new Error("Image generation failed after retries.");
     } catch (error: any) {
-      console.error("Gemini Image Edit Error:", error);
+      // エラーを分類してユーザーフレンドリーなメッセージに変換
+      const appError = handleError(error, 'gemini.editImage');
       
-      // より詳細なエラーメッセージ
-      if (error?.message?.includes('quota') || error?.message?.includes('rate limit')) {
-        throw new Error('APIのレート制限に達しました。しばらく待ってから再試行してください。');
+      // AbortErrorの場合はそのままthrow
+      if (appError.type === 'ABORT') {
+        throw error;
       }
       
-      throw error;
+      // ユーザーフレンドリーなエラーメッセージをthrow
+      throw new Error(appError.userMessage);
     }
   });
 };
@@ -148,10 +157,17 @@ const addTaskTool: FunctionDeclaration = {
   },
 };
 
-export const chatModelName = 'gemini-2.5-flash';
+// チャットモデル名を設定から取得
+export const chatModelName = apiConfig.getModel('gemini', 'chat');
 
 export const getChatModel = () => {
   return ai.models;
 };
 
 export const taskTools = [addTaskTool];
+
+// #TODO: 追加のツール機能を実装
+// - タスクの更新・削除
+// - カレンダーイベントの追加
+// - メモの作成
+// - アプリケーション情報の取得

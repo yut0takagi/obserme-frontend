@@ -3,6 +3,7 @@ import { Card, Button, Input } from '../components/ui';
 import { editImage } from '../services/gemini';
 import { Upload, Wand2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { abortControllerManager } from '../utils/requestUtils';
+import { getUserErrorMessage } from '../utils/errorHandler';
 
 const ImageEditor = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -22,6 +23,9 @@ const ImageEditor = () => {
     };
   }, []);
 
+  // #TODO: ファイルサイズの検証を追加（最大サイズ制限）
+  // #TODO: ファイル形式の検証を追加（画像ファイルのみ許可）
+  // #TODO: 画像の圧縮機能を追加（大きな画像を自動圧縮）
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -65,9 +69,9 @@ const ImageEditor = () => {
         return;
       }
 
-      const errorMessage = error?.message || '画像の生成に失敗しました。もう一度お試しください。';
-      setError(errorMessage);
-      console.error('Image generation error:', error);
+      // ユーザーフレンドリーなエラーメッセージを取得
+      const userMessage = getUserErrorMessage(error);
+      setError(userMessage);
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
+import { handleError, getUserErrorMessage } from '../utils/errorHandler';
 
 interface UseLiveSessionProps {
   onTranscriptionUpdate?: (input: string, output: string) => void;
@@ -63,6 +64,8 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
     setStatusMessage('接続中...');
 
     try {
+      // #TODO: 環境変数からAPIキーを取得する方法を統一（env.tsを使用）
+      // #TODO: APIキーの検証を追加
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       
       // Setup Audio Contexts
@@ -74,6 +77,8 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
+      // #TODO: モデル名をapi-config.jsonから取得
+      // #TODO: 音声設定をユーザーがカスタマイズ可能に（声の種類、言語等）
       const config = {
         model: 'gemini-2.5-flash-native-audio-preview-09-2025',
         config: {
@@ -159,9 +164,11 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
             setStatusMessage('切断されました');
           },
           onerror: (err) => {
-            console.error(err);
+            // #TODO: 自動再接続機能の実装
+            const appError = handleError(err, 'useLiveSession.onerror');
+            const userMessage = getUserErrorMessage(err);
             setIsError(true);
-            setStatusMessage('接続エラー');
+            setStatusMessage(userMessage);
             setIsConnected(false);
           }
         }
@@ -170,9 +177,10 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
       sessionRef.current = sessionPromise;
 
     } catch (e) {
-      console.error(e);
+      const appError = handleError(e, 'useLiveSession.connect');
+      const userMessage = getUserErrorMessage(e);
       setIsError(true);
-      setStatusMessage('初期化に失敗しました');
+      setStatusMessage(userMessage);
     }
   }, [onTranscriptionUpdate]);
 

@@ -2,6 +2,9 @@
  * APIクライアント - レート制限、リトライ、キャッシュ、AbortController対応
  */
 
+import { apiConfig } from '../config/env';
+import { handleError, isRetryableError, ErrorType } from './errorHandler';
+
 interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   headers?: Record<string, string>;
@@ -14,6 +17,12 @@ interface RequestConfig {
     delay?: number;
     backoff?: 'linear' | 'exponential';
   };
+  // 新しい設定システム用のオプション
+  service?: string;        // サービス名（例: 'backend', 'gemini'）
+  endpoint?: string;       // エンドポイント名（例: 'tasks', 'generateContent'）
+  endpointParams?: Record<string, string>; // エンドポイントパラメータ
+  // #TODO: タイムアウト設定を追加（デフォルト30秒）
+  // timeout?: number; // ミリ秒
 }
 
 interface CacheEntry {
@@ -108,6 +117,10 @@ class ApiClient {
     
     // 定期的にキャッシュをクリーンアップ
     setInterval(() => this.cache.cleanup(), 60 * 1000);
+    
+    // #TODO: リクエスト/レスポンスのログ記録機能を追加
+    // #TODO: エラー追跡システム（Sentry等）との統合
+    // #TODO: パフォーマンスメトリクスの収集（リクエスト時間、成功率等）
   }
 
   private generateCacheKey(url: string, config: RequestConfig): string {
@@ -137,6 +150,11 @@ class ApiClient {
           throw error;
         }
 
+        // リトライ不可能なエラーの場合は即座にthrow
+        if (!isRetryableError(error)) {
+          throw error;
+        }
+
         // 最後の試行でない場合のみ待機
         if (attempt < maxAttempts) {
           const waitTime = backoff === 'exponential' 
@@ -147,7 +165,13 @@ class ApiClient {
       }
     }
 
-    throw lastError || new Error('Request failed');
+    // 最後のエラーを分類してユーザーフレンドリーなメッセージに変換
+    if (lastError) {
+      const appError = handleError(lastError, 'apiClient.retryRequest');
+      throw new Error(appError.userMessage);
+    }
+    
+    throw new Error('Request failed');
   }
 
   async request<T>(
@@ -162,10 +186,27 @@ class ApiClient {
       cache = method === 'GET',
       cacheTTL,
       retry = { maxAttempts: 3, delay: 1000, backoff: 'exponential' },
+      service,
+      endpoint,
+      endpointParams,
     } = config;
 
-    // キャッシュキーを生成
-    const cacheKey = this.generateCacheKey(url, config);
+    // URLの決定: サービス名とエンドポイント名が指定されている場合は設定から取得
+    let fullUrl: string;
+    if (service && endpoint) {
+      // 新しい方式: サービス名とエンドポイント名で指定
+      fullUrl = apiConfig.getEndpoint(service, endpoint, endpointParams);
+    } else if (url.startsWith('http')) {
+      // 完全なURLが指定されている場合
+      fullUrl = url;
+    } else {
+      // 相対URLの場合（後方互換性）- バックエンドAPIのベースパスを使用
+      const basePath = apiConfig.getBasePath('backend');
+      fullUrl = `${basePath}${url.startsWith('/') ? url : `/${url}`}`;
+    }
+
+    // キャッシュキーを生成（fullUrlを使用）
+    const cacheKey = this.generateCacheKey(fullUrl, config);
 
     // キャッシュから取得を試みる
     if (cache && method === 'GET') {
@@ -189,7 +230,7 @@ class ApiClient {
         // リトライロジック付きでリクエストを実行
         const result = await this.retryRequest(
           async () => {
-            const response = await fetch(url, {
+            const response = await fetch(fullUrl, {
               method,
               headers: {
                 'Content-Type': 'application/json',
@@ -200,7 +241,31 @@ class ApiClient {
             });
 
             if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
+              // エラーレスポンスのボディをパースして詳細なエラーメッセージを取得
+              let errorMessage = `HTTP error! status: ${response.status}`;
+              try {
+                const errorBody = await response.json();
+                if (errorBody.message) {
+                  errorMessage = errorBody.message;
+                } else if (errorBody.error) {
+                  errorMessage = errorBody.error;
+                }
+              } catch {
+                // JSONパースに失敗した場合はデフォルトメッセージを使用
+                try {
+                  const text = await response.text();
+                  if (text) {
+                    errorMessage = text;
+                  }
+                } catch {
+                  // テキスト取得にも失敗した場合はデフォルトメッセージを使用
+                }
+              }
+              
+              const error = new Error(errorMessage) as any;
+              error.status = response.status;
+              error.statusCode = response.status;
+              throw error;
             }
 
             return response.json();
@@ -249,6 +314,11 @@ class ApiClient {
   clearCache(): void {
     this.cache.clear();
   }
+  
+  // #TODO: リクエストキューイング機能を追加（優先度付きキュー）
+  // #TODO: オフライン対応: リクエストをキューに保存し、オンライン復帰時に実行
+  // #TODO: リクエスト/レスポンスのインターセプター機能を追加
+  // #TODO: リクエストのキャンセル機能を改善（特定のパターンでキャンセル可能に）
 }
 
 // シングルトンインスタンス

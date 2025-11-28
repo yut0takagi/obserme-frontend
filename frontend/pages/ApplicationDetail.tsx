@@ -12,6 +12,9 @@ import { groupTasksByApplicationId } from '../utils/dataOptimization';
 
 const ApplicationDetail = () => {
   const { id } = useParams<{ id: string }>();
+  // #TODO: バックエンドAPIからアプリケーション詳細を取得
+  // #TODO: ローディング状態とエラーハンドリングを追加
+  // #TODO: メモの保存機能をAPIと統合
   // In a real app, this would come from a context or API.
   // We use local state here to simulate adding memos to the mock object
   const applicationData = mockApplications.find(a => a.id === id);

@@ -12,8 +12,18 @@
 `.env` ファイルを作成して、必要な環境変数を設定してください：
 
 ```bash
-GEMINI_API_KEY=your_api_key_here
+# API Keys
+VITE_GEMINI_API_KEY=your_api_key_here
+
+# API Versions (オプション)
+VITE_API_VERSION_GEMINI=v1beta
+VITE_API_VERSION_BACKEND=v2
+
+# Feature Flags
+VITE_ENABLE_DEBUG_MODE=true
 ```
+
+詳細は `frontend/config/README.md` を参照してください。
 
 ## 開発環境での起動
 

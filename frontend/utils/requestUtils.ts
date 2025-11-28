@@ -46,6 +46,8 @@ export function throttle<T extends (...args: any[]) => any>(
  */
 class RequestDeduplicator {
   private pendingRequests = new Map<string, Promise<any>>();
+  // #TODO: タイムアウト機能を追加（長時間保留されているリクエストを自動削除）
+  // #TODO: リクエストの有効期限を設定（古いリクエストは無効化）
 
   async deduplicate<T>(
     key: string,
@@ -69,6 +71,9 @@ class RequestDeduplicator {
   clear(): void {
     this.pendingRequests.clear();
   }
+  
+  // #TODO: 特定のキーパターンでリクエストをキャンセルする機能
+  // #TODO: リクエストの統計情報を取得する機能（進行中のリクエスト数等）
 }
 
 export const requestDeduplicator = new RequestDeduplicator();
@@ -83,6 +88,15 @@ export function useDebounce<T extends (...args: any[]) => any>(
   delay: number
 ): T {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // #TODO: useEffectでクリーンアップを追加（コンポーネントのアンマウント時にタイマーをクリア）
+  // useEffect(() => {
+  //   return () => {
+  //     if (timeoutRef.current) {
+  //       clearTimeout(timeoutRef.current);
+  //     }
+  //   };
+  // }, []);
 
   return useCallback(
     ((...args: Parameters<T>) => {
