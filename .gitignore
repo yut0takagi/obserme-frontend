@@ -4,6 +4,10 @@ dist/
 build/
 .env
 
+# テストカバレッジ
+coverage/
+*.lcov
+
 # OSやエディタの一時ファイル
 .DS_Store
 Thumbs.db
