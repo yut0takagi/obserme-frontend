@@ -1,0 +1,31 @@
+title: 🎉 成果の共有
+labels: ['showcase']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ObserMeを使用して作成したものや、プロジェクトへの貢献を共有してください！
+        
+  - type: textarea
+    id: showcase
+    attributes:
+      label: 共有したい内容
+      description: 作成したものや成果を詳しく説明してください
+      placeholder: 例: ObserMeを使って就職活動を効率化できました！
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: スクリーンショット・画像
+      description: 関連する画像があれば添付してください
+      placeholder: 画像をドラッグ&ドロップで添付できます
+
+  - type: textarea
+    id: lessons
+    attributes:
+      label: 学んだこと・気づき
+      description: このプロジェクトを通じて学んだことや気づきがあれば共有してください
+      placeholder: 例: React Hooksの使い方がよく分かりました
+
