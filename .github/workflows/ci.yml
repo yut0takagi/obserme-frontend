@@ -53,7 +53,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Run tests
         run: npm test -- --run --reporter=verbose
@@ -85,7 +85,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build application
         run: npm run build
@@ -117,10 +117,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Install coverage tool
-        run: npm install --save-dev @vitest/coverage-v8
+        run: npm install --save-dev @vitest/coverage-v8 --legacy-peer-deps
 
       - name: Run tests with coverage
         run: npm test -- --run --coverage
