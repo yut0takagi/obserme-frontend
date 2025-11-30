@@ -17,7 +17,7 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const addEntry = (newEntry: Omit<DiaryEntry, 'id'>) => {
     const entry: DiaryEntry = {
       ...newEntry,
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).slice(2, 11),
     };
     // 日付順にソートして追加（新しい日付が先頭に来るように、またはグラフ描画時にソート）
     // ここでは単純に追加し、表示側でソートを任せる

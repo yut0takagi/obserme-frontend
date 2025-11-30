@@ -25,14 +25,16 @@ const CourseDetail = () => {
 
   // Mock upload handler
   const handleFileUpload = () => {
-    // In a real app, file selection logic would go here
+    // TODO: ファイル選択ロジックを実装
     const title = prompt("資料のタイトルを入力してください");
     if (title) {
         addDocument({
             courseId: course.id,
             title: title,
             type: 'PDF',
-            summary: 'アップロードされたばかりの資料です。AIインデックス処理待ち。'
+            // TODO: 資料の要約をAIで生成
+            // TODO: summary内容の改善
+            summary: 'アップロードされたばかりの資料です。AI処理待ち。'
         });
     }
   };

@@ -12,9 +12,9 @@ import { groupTasksByApplicationId } from '../utils/dataOptimization';
 
 const ApplicationDetail = () => {
   const { id } = useParams<{ id: string }>();
-  // #TODO: バックエンドAPIからアプリケーション詳細を取得
-  // #TODO: ローディング状態とエラーハンドリングを追加
-  // #TODO: メモの保存機能をAPIと統合
+  // TODO: バックエンドAPIからアプリケーション詳細を取得
+  // TODO: ローディング状態とエラーハンドリングを追加
+  // TODO: メモの保存機能をAPIと統合
   // In a real app, this would come from a context or API.
   // We use local state here to simulate adding memos to the mock object
   const applicationData = mockApplications.find(a => a.id === id);
@@ -22,7 +22,6 @@ const ApplicationDetail = () => {
   
   const { tasks } = useTasks();
   
-  // N+1問題の解決: タスクを一度だけグループ化
   const tasksByAppId = useMemo(() => groupTasksByApplicationId(tasks), [tasks]);
   const relatedTasks = useMemo(() => {
     if (!id) return [];
@@ -74,7 +73,7 @@ const ApplicationDetail = () => {
     if (!application) return;
 
     const newMemo: ApplicationMemo = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).slice(2, 11),
       type: memoType,
       title: memoTitle || `${memoType}の記録`,
       content: memoContent,
@@ -222,6 +221,8 @@ const ApplicationDetail = () => {
             value={memoType}
             onChange={handleMemoTypeChange}
             options={[
+              // TODO: メモの種類を動的に取得する
+              // 機能追加時簡易反映のため暫定で記載
               { value: 'ES', label: 'エントリーシート (ES)' },
               { value: '面接', label: '面接記録' },
               { value: 'GD', label: 'グループディスカッション' },

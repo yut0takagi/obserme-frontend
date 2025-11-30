@@ -23,9 +23,9 @@ const Applications = () => {
   // N+1問題の解決: タスクを一度だけグループ化
   const tasksByAppId = useMemo(() => groupTasksByApplicationId(tasks), [tasks]);
   
-  // #TODO: バックエンドAPIからアプリケーション一覧を取得
-  // #TODO: ローディング状態とエラーハンドリングを追加
-  // #TODO: 無限スクロールでのデータ取得（ページネーション）
+  // TODO: バックエンドAPIからアプリケーション一覧を取得
+  // TODO: ローディング状態とエラーハンドリングを追加
+  // TODO: 無限スクロールでのデータ取得（ページネーション）
   // Local state for Applications to support optimistic updates for Gantt dragging
   const [localApps, setLocalApps] = useState<Application[]>(mockApplications);
 

@@ -43,6 +43,7 @@ const Diary = () => {
   return (
     <div className="space-y-6 min-w-0">
       <PageHeader
+        // TODO: 日記の説明文を動的に取得して表示
         description="日々の活動やモチベーションを記録して、自己理解を深めましょう。"
         actions={
           <Button onClick={() => setIsModalOpen(true)} className="flex items-center">

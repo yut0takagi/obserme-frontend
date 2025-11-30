@@ -45,11 +45,8 @@ const ApplicationWBS = () => {
 
       <div className="space-y-4">
         {mockApplications.map(app => {
-          // N+1問題の解決: 事前にグループ化されたタスクを取得
           const appTasks = tasksByAppId.get(app.id) || [];
           const isExpanded = expanded[app.id];
-          
-          // 進捗率計算（最適化済み関数を使用）
           const { progress } = calculateTaskProgress(appTasks);
 
           return (

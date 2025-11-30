@@ -5,7 +5,9 @@ import { mockEvents } from '../services/mockData';
 import { ChevronLeft, ChevronRight, Clock, Calendar } from 'lucide-react';
 
 const CalendarPage = () => {
-  // Mock calendar grid for visualization
+  // TODO: カレンダーのデータをバックエンドAPIから取得
+  // TODO: ローディング状態とエラーハンドリングを追加
+  // TODO: カレンダーのデータをバックエンドAPIから取得
   const days = Array.from({ length: 35 }, (_, i) => i + 1);
   const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
 

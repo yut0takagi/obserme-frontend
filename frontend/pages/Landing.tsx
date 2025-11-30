@@ -44,7 +44,7 @@ const Landing = () => {
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Link to="/login">
+            <Link to="/login">  // TODO: デモページを作成してリンクを変更
               <Button variant="secondary" size="lg" className="px-8">
                 デモを見る
               </Button>
@@ -81,7 +81,7 @@ const Landing = () => {
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">AI ライブアシスタント</h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Gemini 2.5 を搭載したAIとリアルタイムで音声会話。面接練習やキャリア相談がいつでも可能です。
+                AIとリアルタイムで音声会話。面接練習やキャリア相談がいつでも可能です。
               </p>
             </div>
           </div>
@@ -91,7 +91,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-12">
         <div className="max-w-7xl mx-auto px-4 text-center text-gray-400 dark:text-gray-500 text-sm">
-          &copy; 2024 Obserme. All rights reserved.
+          &copy; 2026 Obserme. All rights reserved.
         </div>
       </footer>
     </div>

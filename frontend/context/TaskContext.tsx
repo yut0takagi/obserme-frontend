@@ -17,7 +17,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const addTask = (newTask: Omit<Task, 'id'>) => {
     const task: Task = {
       ...newTask,
-      id: Math.random().toString(36).substr(2, 9), // 簡易的なID生成
+      id: Math.random().toString(36).slice(2, 11), // 簡易的なID生成
     };
     setTasks((prev) => [task, ...prev]);
   };

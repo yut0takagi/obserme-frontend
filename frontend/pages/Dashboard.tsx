@@ -20,6 +20,7 @@ const Dashboard = () => {
       {/* Welcome Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg min-w-0">
         <div className="min-w-0 flex-1">
+          {/* TODO: ユーザ名を動的に取得して表示 */}
           <h2 className="text-2xl sm:text-3xl font-bold mb-2 break-words">おはようございます、太郎さん！ 👋</h2>
           <p className="text-sm sm:text-base text-indigo-100 opacity-90 break-words">今日は {pendingTasks.length} 個のタスクと {mockEvents.length} 件の予定があります。</p>
         </div>
@@ -108,6 +109,8 @@ const Dashboard = () => {
             }
           />
           <div className="space-y-4">
+            {/* TODO: 優先タスクを動的に取得して表示 */}
+            // 現在は暫定で4件表示
             {pendingTasks.slice(0, 4).map(task => (
               <div key={task.id} className="flex items-start space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg">
                 <div className={`w-2 h-2 mt-2 rounded-full ${task.priority === '高' ? 'bg-red-500' : 'bg-yellow-500'}`} />

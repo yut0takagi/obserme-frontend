@@ -94,6 +94,8 @@ const Login = () => {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
+              // TODO: ログインボタンを動的に取得して表示
+              // TODO: アイコンを表示する
                <Button variant="secondary" className="w-full">Google</Button>
                <Button variant="secondary" className="w-full">GitHub</Button>
             </div>
