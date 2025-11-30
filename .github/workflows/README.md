@@ -1,102 +1,97 @@
-# GitHub Actions Workflows
+# GitHub Actions ワークフロー
 
-このディレクトリには、プロジェクトのCI/CDパイプラインを定義するGitHub Actionsワークフローが含まれています。
+このディレクトリには、プロジェクトのCI/CDと自動化のためのGitHub Actionsワークフローが含まれています。
 
 ## ワークフロー一覧
 
-### 1. CI (`ci.yml`)
+### CI/CD
 
-メインのCIワークフロー。すべてのプッシュとプルリクエストで実行されます。
+- **`ci.yml`** - メインのCIワークフロー（リント、型チェック、テスト、ビルド）
+- **`ci-pr.yml`** - プルリクエスト用のCIワークフロー（PRコメント機能付き）
+- **`code-quality.yml`** - コード品質チェック（ESLint、Prettier等）
+- **`docker-build-test.yml`** - Dockerイメージのビルドとテスト
+- **`release.yml`** - リリース自動化
 
-**実行内容:**
-- ✅ Lint & Type Check: TypeScriptの型チェック
-- ✅ Test: ユニットテストの実行
-- ✅ Build: プロダクションビルドの確認
-- ✅ Test Coverage: テストカバレッジの収集
-- ✅ Docker Build: Dockerイメージのビルド確認
+### 通知
 
-**トリガー:**
-- `main`、`develop`、`feature/**`ブランチへのプッシュ
-- プルリクエスト
+- **`discord-notify-push.yml`** - プッシュ時のDiscord通知
+- **`discord-notify-pr.yml`** - プルリクエスト時のDiscord通知
 
-### 2. CI - Pull Request (`ci-pr.yml`)
+### 自動化
 
-プルリクエスト専用のCIワークフロー。PRにコメントを追加します。
+- **`todo-to-issue.yml`** - TODOコメントからGitHub Issueを自動生成 ⭐ NEW
 
-**実行内容:**
-- Type check
-- テスト実行
-- ビルド確認
-- PRへの結果コメント
+## TODO to Issue ワークフロー
 
-**トリガー:**
-- `main`、`develop`へのプルリクエスト
+### 概要
 
-### 3. Code Quality (`code-quality.yml`)
+`todo-to-issue.yml`は、コード内のTODOコメントを検出して、自動的にGitHub Issueを作成するワークフローです。
 
-コード品質チェックワークフロー。
+### 動作
 
-**実行内容:**
-- TODOコメントの検出
-- console.logステートメントの検出
-- 大きなファイルの検出
-- 未使用の依存関係のチェック
+1. **トリガー**: 
+   - `main`または`develop`ブランチへのプッシュ時
+   - 手動実行（`workflow_dispatch`）
 
-**トリガー:**
-- `main`、`develop`へのプッシュ
-- プルリクエスト
-- 毎週月曜日の定期実行
+2. **検出対象**:
+   - `frontend/`ディレクトリ内の`.ts`、`.tsx`、`.js`、`.jsx`ファイル
+   - 以下のパターンのTODOコメント:
+     - `// TODO: ...`
+     - `/* TODO: ... */`
+     - `# TODO: ...`
+     - `<!-- TODO: ... -->`
 
-### 4. Release (`release.yml`)
+3. **Issue作成**:
+   - 各TODOコメントに対して1つのIssueを作成
+   - 重複チェック（既存のIssueとタイトルが同じ場合はスキップ）
+   - 自動ラベル付け（`todo`、`automated`、カテゴリ別ラベル）
 
-リリースワークフロー。タグがプッシュされたときに実行されます。
+4. **Issue内容**:
+   - ファイルパスと行番号
+   - TODOコメントの内容
+   - ファイルへの直接リンク
+   - コミットへのリンク
+   - 優先度とカテゴリの自動推測
 
-**実行内容:**
-- テスト実行
-- プロダクションビルド
-- GitHub Releaseの作成
-- Dockerイメージのビルドとプッシュ
+### カテゴリ自動判定
 
-**トリガー:**
-- `v*`タグへのプッシュ
-- 手動実行（workflow_dispatch）
+TODOコメントの内容から以下のカテゴリを自動判定します：
 
-### 5. Discord Notification
+- **バグ**: `バグ`、`bug`、`fix`を含む場合
+- **セキュリティ**: `セキュリティ`、`security`を含む場合
+- **パフォーマンス**: `パフォーマンス`、`performance`を含む場合
+- **機能追加**: 上記以外（デフォルト）
 
-既存のDiscord通知ワークフロー。
+### 優先度自動判定
 
-## 必要なSecrets
+TODOコメントの内容から以下の優先度を自動判定します：
 
-以下のSecretsをGitHubリポジトリに設定してください：
+- **高**: `重要`、`critical`、`urgent`を含む場合
+- **低**: `低`、`low`、`optional`を含む場合
+- **中**: 上記以外（デフォルト）
 
-- `VITE_GEMINI_API_KEY`: Gemini APIキー（ビルド時に使用）
-- `DISCORD_WEBHOOK_URL`: Discord通知用のWebhook URL（オプション）
+### 使用方法
 
-## ローカルでの実行
+#### 自動実行
 
-CIワークフローをローカルで実行するには：
+`main`または`develop`ブランチにプッシュすると自動的に実行されます。
 
-```bash
-# テストの実行
-cd frontend
-npm test
+#### 手動実行
 
-# 型チェック
-npx tsc --noEmit
+1. GitHubリポジトリの「Actions」タブに移動
+2. 「TODO to Issue」ワークフローを選択
+3. 「Run workflow」ボタンをクリック
+4. ブランチを選択して実行
 
-# ビルド
-npm run build
-```
+### 注意事項
 
-## トラブルシューティング
+- 既存のIssueと重複しないように、タイトルで重複チェックを行います
+- TODOコメントを削除すると、対応するIssueは自動的には削除されません（手動でクローズしてください）
+- 大量のTODOコメントがある場合、一度に多くのIssueが作成される可能性があります
 
-### CIが失敗する場合
+### カスタマイズ
 
-1. **型エラー**: `npx tsc --noEmit`でローカルで確認
-2. **テスト失敗**: `npm test`でローカルで確認
-3. **ビルドエラー**: `npm run build`でローカルで確認
+ワークフローをカスタマイズする場合は、以下のファイルを編集してください：
 
-### キャッシュの問題
-
-GitHub Actionsのキャッシュをクリアするには、ワークフローを再実行するか、キャッシュを手動で削除してください。
-
+- `.github/workflows/todo-to-issue.yml` - ワークフローの設定
+- `.github/scripts/find-todos.js` - TODOコメント検索スクリプト

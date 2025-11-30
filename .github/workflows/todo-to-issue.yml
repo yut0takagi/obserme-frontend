@@ -1,0 +1,171 @@
+name: TODO to Issue
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.jsx'
+  workflow_dispatch: # 手動実行も可能
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  create-todo-issues:
+    name: Create Issues from TODO Comments
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 全履歴を取得
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Find TODO comments
+        id: find-todos
+        run: |
+          # Node.jsスクリプトを使用してTODOコメントを検索
+          echo "todos<<EOF" >> $GITHUB_OUTPUT
+          node .github/scripts/find-todos.js >> $GITHUB_OUTPUT || echo "[]" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Create Issues from TODOs
+        uses: actions/github-script@v7
+        env:
+          TODOS_JSON: ${{ steps.find-todos.outputs.todos }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const todosJson = process.env.TODOS_JSON || '[]';
+            let todos = [];
+            try {
+              todos = JSON.parse(todosJson);
+            } catch (error) {
+              console.error('Failed to parse TODOs JSON:', error.message);
+              console.log('TODOs JSON:', todosJson);
+              todos = [];
+            }
+            
+            if (todos.length === 0) {
+              console.log('No TODO comments found.');
+              return;
+            }
+            
+            console.log(`Found ${todos.length} TODO comments.`);
+            
+            // 既存のIssueを取得（TODO関連のIssueのみ）
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'todo,automated',
+              per_page: 100
+            });
+            
+            // 既存のIssueのタイトルをマップ（重複チェック用）
+            const existingTitles = new Set(existingIssues.map(issue => issue.title));
+            
+            for (const todo of todos) {
+              // Issueタイトルを生成
+              const title = `[TODO] ${todo.content.substring(0, 100)}${todo.content.length > 100 ? '...' : ''}`;
+              
+              // 重複チェック
+              if (existingTitles.has(title)) {
+                console.log(`Skipping duplicate: ${title}`);
+                continue;
+              }
+              
+              // Issue本文を生成（TODOコメントの内容を解析して詳細を追加）
+              const generateIssueBody = (todo) => {
+                const fileLink = `[${todo.file}](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.sha}/frontend/${todo.file}#L${todo.line})`;
+                const commitLink = `[${context.sha.substring(0, 7)}](https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${context.sha})`;
+                
+                // TODOコメントの内容から優先度やカテゴリを推測
+                const content = todo.content.toLowerCase();
+                let priority = '中';
+                let category = 'enhancement';
+                
+                if (content.includes('重要') || content.includes('critical') || content.includes('urgent')) {
+                  priority = '高';
+                } else if (content.includes('低') || content.includes('low') || content.includes('optional')) {
+                  priority = '低';
+                }
+                
+                if (content.includes('バグ') || content.includes('bug') || content.includes('fix')) {
+                  category = 'bug';
+                } else if (content.includes('セキュリティ') || content.includes('security')) {
+                  category = 'security';
+                } else if (content.includes('パフォーマンス') || content.includes('performance')) {
+                  category = 'performance';
+                }
+                
+                return `## 📝 TODO コメントから自動生成
+
+**ファイル**: \`${todo.file}\`
+**行番号**: ${todo.line}
+**優先度**: ${priority}
+**カテゴリ**: ${category}
+
+### 内容
+${todo.content}
+
+### 詳細
+このIssueは、\`${todo.file}:${todo.line}\` にあるTODOコメントから自動生成されました。
+
+### 関連情報
+- 📄 ファイル: ${fileLink}
+- 🔗 コミット: ${commitLink}
+- 📍 場所: \`${todo.file}:${todo.line}\`
+
+### 実装時の注意点
+- TODOコメントを削除する前に、実装が完了していることを確認してください
+- 関連するテストも追加・更新してください
+- 必要に応じてドキュメントも更新してください
+
+---
+*このIssueは自動生成されました。実装が完了したら、該当するTODOコメントを削除してください。*`;
+              };
+              
+              const body = generateIssueBody(todo);
+
+              try {
+                // カテゴリに応じてラベルを設定
+                const content = todo.content.toLowerCase();
+                let labels = ['todo', 'automated'];
+                
+                if (content.includes('バグ') || content.includes('bug') || content.includes('fix')) {
+                  labels.push('bug');
+                } else if (content.includes('セキュリティ') || content.includes('security')) {
+                  labels.push('security');
+                } else if (content.includes('パフォーマンス') || content.includes('performance')) {
+                  labels.push('performance');
+                } else {
+                  labels.push('enhancement');
+                }
+                
+                const { data: issue } = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: title,
+                  body: body,
+                  labels: labels
+                });
+                
+                console.log(`Created issue #${issue.number}: ${title}`);
+              } catch (error) {
+                console.error(`Failed to create issue for ${title}:`, error.message);
+              }
+            }
+
