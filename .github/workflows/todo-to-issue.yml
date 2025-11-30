@@ -3,7 +3,6 @@ name: TODO to Issue
 on:
   push:
     branches:
-      - main
       - develop
     paths:
       - 'frontend/**/*.ts'
