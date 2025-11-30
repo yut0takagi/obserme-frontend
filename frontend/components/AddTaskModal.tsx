@@ -79,6 +79,7 @@ export const AddTaskModal = ({ isOpen, onClose, defaultApplicationId, defaultCou
           value={category}
           onChange={(e) => setCategory(e.target.value as any)}
           options={[
+            // TODO: カテゴリの選択肢を動的に取得する
             { value: '就活', label: '就活' },
             { value: '学習', label: '学習' },
             { value: '生活', label: '生活' },

@@ -23,9 +23,9 @@ const ImageEditor = () => {
     };
   }, []);
 
-  // #TODO: ファイルサイズの検証を追加（最大サイズ制限）
-  // #TODO: ファイル形式の検証を追加（画像ファイルのみ許可）
-  // #TODO: 画像の圧縮機能を追加（大きな画像を自動圧縮）
+  // TODO: ファイルサイズの検証を追加（最大サイズ制限）
+  // TODO: ファイル形式の検証を追加（画像ファイルのみ許可）
+  // TODO: 画像の圧縮機能を追加（大きな画像を自動圧縮）
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -55,6 +55,9 @@ const ImageEditor = () => {
 
     try {
       const result = await editImage(selectedImage, prompt, controller.signal);
+      
+      // TODO: エラーハンドリングの追加
+      // TODO: エラーコードに基づくリトライロジックの追加
       
       // リクエストがキャンセルされた場合
       if (controller.signal.aborted) {

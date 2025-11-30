@@ -11,8 +11,8 @@ if (!apiKey) {
 
 const ai = new GoogleGenAI({ apiKey });
 
-// #TODO: レート制限の設定をapi-config.jsonから読み込むように変更
-// #TODO: チャット機能のレート制限も追加
+// TODO: レート制限の設定をapi-config.jsonから読み込むように変更
+// TODO: チャット機能のレート制限も追加
 // レート制限: 画像編集は1分間に5回まで
 let imageEditRequests: number[] = [];
 const MAX_IMAGE_EDIT_PER_MINUTE = 5;
@@ -166,7 +166,7 @@ export const getChatModel = () => {
 
 export const taskTools = [addTaskTool];
 
-// #TODO: 追加のツール機能を実装
+// TODO: 追加のツール機能を実装
 // - タスクの更新・削除
 // - カレンダーイベントの追加
 // - メモの作成

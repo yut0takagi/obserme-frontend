@@ -7,7 +7,6 @@ import {
   Briefcase, 
   Calendar, 
   Settings, 
-  User, 
   Image as ImageIcon,
   Mic,
   Bell,
@@ -15,9 +14,7 @@ import {
   Sun,
   Moon,
   LogOut,
-  ListTree,
   MessageSquare,
-  Sparkles,
   BookOpen,
   GraduationCap
 } from 'lucide-react';
@@ -70,7 +67,7 @@ export const Layout = () => {
 
   const handleLogout = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // 実際には認証トークンの削除などを行う
+    // TODO: 実際には認証トークンの削除などを行う
     navigate('/');
   };
 

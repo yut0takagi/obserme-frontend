@@ -53,12 +53,14 @@ const Profile = () => {
   };
 
   const connections = [
+    // TODO: つながりを動的に取得して表示
     { id: 1, name: "佐藤 花子", role: "デザイン学部 • 2024年卒", mutual: 3 },
     { id: 2, name: "田中 健太", role: "経済学部 • 2023年卒", mutual: 1 },
     { id: 3, name: "鈴木 一郎", role: "工学研究科 • 修士1年", mutual: 5 },
   ];
 
   const sharedItems = [
+    // TODO: 共有アイテムを動的に取得して表示
     { id: 1, title: "アルゴリズム論_まとめノート.pdf", type: "Document", date: "2023-10-20", likes: 12 },
     { id: 2, title: "Web開発ロードマップ 2024", type: "Link", date: "2023-11-01", likes: 45 },
     { id: 3, title: "【面接対策】逆質問集", type: "Memo", date: "2023-11-15", likes: 8 },
@@ -233,6 +235,7 @@ const Profile = () => {
                         <LinkIcon className="w-4 h-4 mr-2" /> {user.website}
                       </div>
                       <div className="flex items-center">
+                        // TODO: 卒業予定を動的に取得して表示
                         <Calendar className="w-4 h-4 mr-2" /> 2024年3月 卒業予定
                       </div>
                     </div>

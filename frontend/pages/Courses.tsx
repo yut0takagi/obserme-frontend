@@ -10,8 +10,11 @@ import { Course } from '../types';
 const Courses = () => {
   const { courses } = useCourses();
 
-  // 時間割グリッド生成
+  // TODO: 時間割グリッドをユーザ設定から変更可能にする
+  // 現在は暫定で1-6時限を表示
   const periods = [1, 2, 3, 4, 5, 6];
+  // TODO: オンライン授業, オンデマンド授業の表示を追加
+  // 現在は暫定で月曜日から土曜日を表示
   const days: Course['dayOfWeek'][] = ['月', '火', '水', '木', '金', '土'];
 
   const getCourseForCell = (day: string, period: number) => {
@@ -35,6 +38,7 @@ const Courses = () => {
           <SectionHeader
             title={
               <div className="flex items-center">
+                // TODO: 時間割の年学期を動的に取得
                 <Clock className="w-5 h-5 mr-2 flex-shrink-0" /> <span>2023年 秋学期 時間割</span>
               </div>
             }

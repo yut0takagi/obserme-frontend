@@ -71,6 +71,8 @@ const Signup = () => {
           </form>
 
           <div className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
+            // TODO: 利用規約とプライバシーポリシーを動的に取得して表示
+            // TODO: リンクを動的に取得して表示
             登録することで、<a href="#" className="underline">利用規約</a>と<a href="#" className="underline">プライバシーポリシー</a>に同意したことになります。
           </div>
         </Card>

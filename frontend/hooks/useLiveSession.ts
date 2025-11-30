@@ -15,10 +15,11 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
   const inputContextRef = useRef<AudioContext | null>(null);
   const outputContextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
+  const animationFrameRef = useRef<number | null>(null);
 
   // Decoding helper
   const decodeAudioData = async (data: Uint8Array, ctx: AudioContext) => {
@@ -96,6 +97,7 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
         ...config,
         callbacks: {
           onopen: () => {
+            //TODO: 接続完了における出力の正規化
             setStatusMessage('接続完了');
             setIsConnected(true);
 
@@ -104,21 +106,40 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
             const source = inputContextRef.current.createMediaStreamSource(streamRef.current);
             sourceRef.current = source;
             
-            // Use ScriptProcessor for raw PCM access (Standard web audio API approach for this demo)
-            const processor = inputContextRef.current.createScriptProcessor(4096, 1, 1);
-            processorRef.current = processor;
-
-            processor.onaudioprocess = (e) => {
-              const inputData = e.inputBuffer.getChannelData(0);
-              const pcmBlob = createPcmBlob(inputData);
+            // Use AnalyserNode with requestAnimationFrame instead of deprecated ScriptProcessorNode
+            // TODO: Migrate to AudioWorklet for better performance and modern API
+            const analyser = inputContextRef.current.createAnalyser();
+            analyser.fftSize = 4096;
+            analyser.smoothingTimeConstant = 0;
+            analyserRef.current = analyser;
+            
+            source.connect(analyser);
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Float32Array(bufferLength);
+            
+            const processAudio = () => {
+              if (!analyserRef.current) return;
+              
+              analyserRef.current.getFloatTimeDomainData(dataArray);
+              const pcmBlob = createPcmBlob(dataArray);
               
               sessionPromise.then((session: any) => {
                 session.sendRealtimeInput({ media: pcmBlob });
+              }).catch(() => {
+                // Session closed or error occurred, stop processing
+                if (animationFrameRef.current !== null) {
+                  cancelAnimationFrame(animationFrameRef.current);
+                  animationFrameRef.current = null;
+                }
               });
+              
+              if (analyserRef.current) {
+                animationFrameRef.current = requestAnimationFrame(processAudio);
+              }
             };
-
-            source.connect(processor);
-            processor.connect(inputContextRef.current.destination);
+            
+            animationFrameRef.current = requestAnimationFrame(processAudio);
           },
           onmessage: async (msg: LiveServerMessage) => {
             // Handle Audio Output
@@ -164,7 +185,7 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
             setStatusMessage('切断されました');
           },
           onerror: (err) => {
-            // #TODO: 自動再接続機能の実装
+            // TODO: 自動再接続機能の実装
             const appError = handleError(err, 'useLiveSession.onerror');
             const userMessage = getUserErrorMessage(err);
             setIsError(true);
@@ -190,8 +211,12 @@ export const useLiveSession = ({ onTranscriptionUpdate }: UseLiveSessionProps = 
     }
     
     // Cleanup Audio
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     streamRef.current?.getTracks().forEach(track => track.stop());
-    processorRef.current?.disconnect();
+    analyserRef.current?.disconnect();
     sourceRef.current?.disconnect();
     inputContextRef.current?.close();
     outputContextRef.current?.close();

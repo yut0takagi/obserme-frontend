@@ -24,17 +24,17 @@ export const ChatSidebar = ({ onClose }: ChatSidebarProps) => {
     {
       id: '1',
       role: 'model',
-      content: 'こんにちは！Obserme AI です。タスクの追加や相談など、お気軽にどうぞ。',
+      content: 'こんにちは! タスクの追加や相談など、お気軽にどうぞ。',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       name: 'Obserme AI',
       avatar: 'AI'
     }
   ]);
 
-  // #TODO: 会話履歴の最大件数を制限（メモリリーク防止）
-  // #TODO: 会話履歴の圧縮機能（古いメッセージを要約）
+  // TODO: 会話履歴の最大件数を制限（メモリリーク防止）
+  // TODO: 会話履歴の圧縮機能（古いメッセージを要約）
   const [geminiHistory, setGeminiHistory] = useState<Content[]>([
-    { role: 'model', parts: [{ text: 'こんにちは！Obserme AI です。' }] }
+    { role: 'model', parts: [{ text: 'こんにちは! Obserme AI です。' }] }
   ]);
 
   const scrollToBottom = () => {
@@ -97,9 +97,9 @@ export const ChatSidebar = ({ onClose }: ChatSidebarProps) => {
         { role: 'user', parts: [{ text: userText }] }
       ];
 
-      // #TODO: チャット機能のレート制限を追加
-      // #TODO: ストリーミングレスポンスの対応（リアルタイムでテキストを表示）
-      // #TODO: 会話履歴の永続化（ローカルストレージまたはバックエンドAPI）
+      // TODO: チャット機能のレート制限を追加
+      // TODO: ストリーミングレスポンスの対応（リアルタイムでテキストを表示）
+      // TODO: 会話履歴の永続化（ローカルストレージまたはバックエンドAPI）
       const result = await model.generateContent({
         model: chatModelName,
         contents: currentHistory,

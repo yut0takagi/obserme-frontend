@@ -20,7 +20,7 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const addCourse = (newCourse: Omit<Course, 'id'>) => {
     const course: Course = {
       ...newCourse,
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).slice(2, 11),
     };
     setCourses(prev => [...prev, course]);
   };
@@ -28,7 +28,7 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const addDocument = (newDoc: Omit<CourseDocument, 'id' | 'uploadDate' | 'isIndexed'>) => {
     const doc: CourseDocument = {
       ...newDoc,
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).slice(2, 11),
       uploadDate: new Date().toISOString().split('T')[0],
       isIndexed: false, // デフォルトは未インデックス（非同期処理想定）
     };

@@ -32,7 +32,7 @@ export const MotivationGraph = ({ entries, days = 14, height = 200 }: Motivation
       result.push({
         date: dateStr,
         label,
-        // データがない日は直前のデータを引き継ぐか、nullにするか。
+        // TODO: データがない日は直前のデータを引き継ぐか、nullにするか。
         // ここではnullにして線をつながない、または50（中立）にするなどの処理が必要
         // 今回はデータが存在するポイントのみでグラフを描画するためにフィルタリングするアプローチをとる
         score: entryMap.get(dateStr)
